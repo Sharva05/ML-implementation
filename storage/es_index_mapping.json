@@ -1,0 +1,24 @@
+{
+  "mappings": {
+    "properties": {
+      "log_id": { "type": "keyword" },
+
+      "sequence_number": { "type": "long" },
+      "timestamp": { "type": "date" },
+
+      "source_type": { "type": "keyword" },
+      "service": { "type": "keyword" },
+      "host": { "type": "keyword" },
+
+      "log_level": { "type": "keyword" },
+      "event_type": { "type": "keyword" },
+      "event_action": { "type": "keyword" },
+      "template_id": { "type": "keyword" },
+
+      "message": { "type": "text" },
+      "metadata": { "type": "object" },
+
+      "session_id": { "type": "keyword" }
+    }
+  }
+}
