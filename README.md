@@ -22,35 +22,59 @@ The project is structured into logical modules reflecting the steps in the ML pi
 
 To run the pipeline infrastructure, we use Docker Compose to spin up the required databases and visualization tools.
 
-### 1. Configure Environment Variables
+### 1. Setup Virtual Environment and Dependencies
 
-First, set up your local environment variables by copying the provided example file:
+Create a virtual environment and install the required libraries:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 2. Configure Environment Variables
+
+Set up your local environment variables:
 
 ```bash
 cp .env.example .env
 ```
 
-Open `.env` and configure your credentials. You can also customize the PostgreSQL port (`POSTGRES_PORT`) if the default `5432` is already in use on your machine.
+### 3. Start the Services
 
-### 2. Start the Services
-
-Once your `.env` is ready, deploy the infrastructure stack:
+Deploy the infrastructure stack:
 
 ```bash
 docker compose up -d
 ```
 
-This command will spin up the following containers:
-- **PostgreSQL** (Relational data storage)
-- **Elasticsearch** (Log storage and search)
-- **Kibana** (Elasticsearch visualization, mapped to port `5601`)
-- **Grafana** (General metrics visualization, mapped to port `3000`)
+### 4. Running Scripts
 
-### 3. Verify the Deployment
-
-Ensure all services are up and running:
+To avoid import errors, **always run scripts from the project root** using the `-m` (module) flag:
 
 ```bash
-docker ps
+python3 -m storage.db_writer
 ```
-You should see `log_postgres`, `log_elasticsearch`, `log_kibana`, and `log_grafana` in the output.
+
+## Environment Variable Handling
+
+All environment variables must be accessed using the global environment handler via `common.config`.
+
+### Usage
+
+```python
+# Variables are lazily evaluated. They are only checked when actually imported/used.
+from common.config import DB_URL
+```
+
+### Behavior
+
+- **Lazy Evaluation**: Fails only when a specific variable is accessed.
+- **Clean Errors**: If a variable is missing, the app outputs a clear message and exits without a long traceback:
+  `❌ [ENV ERROR] Missing required variable: NAME`
+
+## Rules
+
+- Do not use `os.getenv()` or `dotenv` directly.
+- Always import variables from `common.config`.
+- Never print raw environment variables to the console.

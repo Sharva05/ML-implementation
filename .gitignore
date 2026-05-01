@@ -4,7 +4,7 @@ __pycache__/
 *.pyc
 
 # Virtual environment
-env/
+venv/
 
 # VS Code (optional)
 .vscode/
@@ -13,3 +13,5 @@ env/
 data/
 *.log
 *.parquet
+
+test_env_handler.py
