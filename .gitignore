@@ -13,3 +13,5 @@ env/
 data/
 *.log
 *.parquet
+
+test_env_handler.py

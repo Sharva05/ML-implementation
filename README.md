@@ -54,3 +54,30 @@ Ensure all services are up and running:
 docker ps
 ```
 You should see `log_postgres`, `log_elasticsearch`, `log_kibana`, and `log_grafana` in the output.
+
+### 4. Environment Variable Handling
+
+All environment variables must be accessed using the global environment handler. Direct usage of `os.getenv()` or `dotenv` outside this handler is not allowed.
+
+## Usage
+
+from common.env_handler import get_required_env
+
+env = get_required_env("POSTGRES_USER")
+POSTGRES_USER = env["POSTGRES_USER"]
+
+## Behavior
+
+- Loads variables from `.env`
+- Fails immediately if any required variable is missing or empty
+
+## Error
+
+[ENV ERROR] Missing required variables: VARIABLE_NAME
+
+## Rules
+
+- Do not use `os.getenv()` directly
+- Do not use `dotenv` outside `env_handler.py`
+- Do not print environment variables
+- Always use `get_required_env()`
