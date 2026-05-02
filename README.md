@@ -2,6 +2,23 @@
 
 This project is a comprehensive Machine Learning pipeline for network log analysis. It covers the full lifecycle from data ingestion to anomaly detection, correlation, log importance scoring, data storage, and visualization.
 
+## Development Progress
+
+| Module | Status | Notes |
+|---|---|---|
+| `common/config.py` | Done | Lazy env-var access + graph tuning constants |
+| `common/env_handler.py` | Done | Fail-fast `.env` loader |
+| `correlation/graph_builder.py` | Done | Co-occurrence graph, anomaly linkage, node cap |
+| `correlation/tests/test_correlation.py` | Done | 23 unit tests, all passing |
+| `ingestion/` | Skeleton | Not yet implemented |
+| `parsing/` | Skeleton | Not yet implemented |
+| `features/` | Skeleton | Not yet implemented |
+| `ml/` | Skeleton | Not yet implemented |
+| `scoring/` | Skeleton | Not yet implemented |
+| `storage/` | Skeleton | Not yet implemented |
+| `visualization/` | Skeleton | Not yet implemented |
+| `evaluation/` | Skeleton | Not yet implemented |
+
 ## Architecture & Modules
 
 The project is structured into logical modules reflecting the steps in the ML pipeline:
@@ -11,12 +28,47 @@ The project is structured into logical modules reflecting the steps in the ML pi
 - **`parsing/`**: Parsers to convert raw log lines into structured data formats.
 - **`features/`**: Feature engineering logic to transform parsed data into model-ready features.
 - **`ml/`**: Machine Learning models specifically built for detecting anomalies in log data.
-- **`correlation/`**: Logic to identify correlations between different log events and anomalies.
+- **`correlation/`**: Identifies correlations between log events and anomalies. See details below.
 - **`scoring/`**: Mechanisms to compute an "importance score" for log events to prioritize review.
 - **`storage/`**: Interfaces for data persistence, interacting with PostgreSQL and Elasticsearch.
 - **`visualization/`**: Configurations and instructions for dashboarding via Kibana and Grafana.
 - **`evaluation/`**: Contains scripts and utilities for evaluating model and pipeline performance.
 - **`pipeline.py`**: The central orchestrator script that ties the modules together.
+
+## Correlation Module
+
+### Graph Schema
+
+The correlation graph is a weighted undirected graph where:
+
+- **Node** = a unique log template string (from the parsing stage) or an anomaly marker
+  - `id`: template string or `anomaly:<label>`
+  - `node_type`: `"log_template"` or `"anomaly"`
+  - `count`: raw occurrence frequency
+- **Edge** = co-occurrence within a configurable time window
+  - `co_occurrences`: raw count of windows where both nodes appear together
+  - `weight`: normalized value in `(0, 1]`, where `1.0` is the most frequent co-occurring pair
+
+### Configuration (`common/config.py`)
+
+| Constant | Default | Description |
+|---|---|---|
+| `CORRELATION_TIME_WINDOW_SECONDS` | `60` | Window width for co-occurrence detection |
+| `MAX_GRAPH_NODES` | `500` | Cap on template nodes; anomaly nodes are always admitted |
+
+### Running the Correlation Module
+
+**Unit tests:**
+
+```bash
+python -m pytest correlation/tests/test_correlation.py -v
+```
+
+**Manual inspection (synthetic 5-node example):**
+
+```bash
+python3 -m correlation.manual_test
+```
 
 ## Infrastructure Setup
 
@@ -71,10 +123,11 @@ from common.config import DB_URL
 
 - **Lazy Evaluation**: Fails only when a specific variable is accessed.
 - **Clean Errors**: If a variable is missing, the app outputs a clear message and exits without a long traceback:
-  `❌ [ENV ERROR] Missing required variable: NAME`
+  `[ENV ERROR] Missing required variable: NAME`
 
 ## Rules
 
 - Do not use `os.getenv()` or `dotenv` directly.
 - Always import variables from `common.config`.
 - Never print raw environment variables to the console.
+- Always run scripts from the project root using `python3 -m <module>` to avoid import errors.
