@@ -1,27 +1,25 @@
 import pandas as pd
-from ml.anomaly_detector import detect_anomalies
-
-def test_dummy_pipeline():
-    data = {
-        "log_id": ["L1", "L2", "L3", "L4", "L5"],
-        "session_id": ["S1", "S1", "S1", "S2", "S2"],
-        "frequency_score": [0.9, 0.2, 0.8, 0.1, 2.0],
-        "burstiness_score": [0.7, 0.1, 0.6, 0.2, 0.9],
-        "zscore_base": [1.5, -0.5, 1.2, -1.0, 2.0],
-        "time_delta_prev": [2, 50, 5, 100, 1],
-        "severity_weight": [1.0, 0.4, 0.8, 0.2, 1.0],
-        "counter_proximity": [1, 0, 1, 0, 1]
-    }
-
-    df = pd.DataFrame(data)
-
-    result = detect_anomalies(df)
-
-    print("INPUT:")
-    print(df)
-    print("\nOUTPUT:")
-    print(result)
+from ml.anomaly_detector import AnomalyDetector
 
 
-if __name__ == "__main__":
-    test_dummy_pipeline()
+def test_anomaly_output_schema():
+    df = pd.DataFrame({
+        "log_id": [1, 2, 3],
+        "feature1": [10, 20, 30],
+        "feature2": [1, 2, 100]
+    })
+
+    detector = AnomalyDetector()
+    detector.fit(df.drop(columns=["log_id"]))
+
+    result = detector.predict(df)
+
+    expected_cols = [
+        "log_id",
+        "isolation_score",
+        "zscore",
+        "combined_score",
+        "is_anomaly"
+    ]
+
+    assert all(col in result.columns for col in expected_cols)
