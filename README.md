@@ -4,20 +4,20 @@ This project is a comprehensive Machine Learning pipeline for network log analys
 
 ## Development Progress
 
-| Module | Status | Notes |
-|---|---|---|
-| `common/config.py` | Done | Lazy env-var access + graph tuning constants |
-| `common/env_handler.py` | Done | Fail-fast `.env` loader |
-| `correlation/graph_builder.py` | Done | Co-occurrence graph, anomaly linkage, node cap |
-| `correlation/tests/test_correlation.py` | Done | 23 unit tests, all passing |
-| `ingestion/` | Skeleton | Not yet implemented |
-| `parsing/` | Skeleton | Not yet implemented |
-| `features/` | Skeleton | Not yet implemented |
-| `ml/` | Skeleton | Not yet implemented |
-| `scoring/` | Skeleton | Not yet implemented |
-| `storage/` | Skeleton | Not yet implemented |
-| `visualization/` | Skeleton | Not yet implemented |
-| `evaluation/` | Skeleton | Not yet implemented |
+| Module                                  | Status      | Notes                                                           |
+| --------------------------------------- | ----------- | --------------------------------------------------------------- |
+| `common/config.py`                      | Done        | Lazy env-var access + graph tuning constants                    |
+| `common/env_handler.py`                 | Done        | Fail-fast `.env` loader                                         |
+| `correlation/graph_builder.py`          | Done        | Co-occurrence graph, anomaly linkage, node cap                  |
+| `correlation/tests/test_correlation.py` | Done        | 23 unit tests, all passing                                      |
+| `ingestion/`                            | Skeleton    | Not yet implemented                                             |
+| `parsing/`                              | Skeleton    | Not yet implemented                                             |
+| `features/`                             | Skeleton    | Not yet implemented                                             |
+| `ml/`                                   | In Progress | Isolation Forest + Z-score hybrid anomaly detection implemented |
+| `scoring/`                              | Skeleton    | Not yet implemented                                             |
+| `storage/`                              | Skeleton    | Not yet implemented                                             |
+| `visualization/`                        | Skeleton    | Not yet implemented                                             |
+| `evaluation/`                           | Skeleton    | Not yet implemented                                             |
 
 ## Architecture & Modules
 
@@ -51,10 +51,10 @@ The correlation graph is a weighted undirected graph where:
 
 ### Configuration (`common/config.py`)
 
-| Constant | Default | Description |
-|---|---|---|
-| `CORRELATION_TIME_WINDOW_SECONDS` | `60` | Window width for co-occurrence detection |
-| `MAX_GRAPH_NODES` | `500` | Cap on template nodes; anomaly nodes are always admitted |
+| Constant                          | Default | Description                                              |
+| --------------------------------- | ------- | -------------------------------------------------------- |
+| `CORRELATION_TIME_WINDOW_SECONDS` | `60`    | Window width for co-occurrence detection                 |
+| `MAX_GRAPH_NODES`                 | `500`   | Cap on template nodes; anomaly nodes are always admitted |
 
 ### Running the Correlation Module
 
@@ -68,6 +68,82 @@ python -m pytest correlation/tests/test_correlation.py -v
 
 ```bash
 python3 -m correlation.manual_test
+```
+
+## ML Module (Anomaly Detection)
+
+### Overview
+
+The ML module detects anomalies using:
+
+- Isolation Forest (ML-based)
+- Z-score (statistical)
+
+### Model Design
+
+- Isolation Forest → learns normal behavior
+- Z-score → measures deviation
+
+Hybrid:
+
+```text
+combined_score = w1 * isolation_score + w2 * zscore
+```
+
+where:
+
+- w1 = weight for ML signal
+- w2 = weight for statistical signal
+
+### Configuration (common/config.py)
+
+| Parameter                | Description                       |
+| ------------------------ | --------------------------------- |
+| contamination            | Expected proportion of anomalies  |
+| weight_isolation         | Weight for Isolation Forest score |
+| weight_zscore            | Weight for Z-score contribution   |
+| training_window_sessions | Number of sessions for retraining |
+
+### Output Contract
+
+| Column          | Description            |
+| --------------- | ---------------------- |
+| log_id          | Unique identifier      |
+| isolation_score | Isolation Forest score |
+| zscore          | Statistical deviation  |
+| combined_score  | Hybrid score           |
+| is_anomaly      | Boolean anomaly flag   |
+
+Saved to:
+
+```text
+data/processed/anomaly_df.parquet
+```
+
+### Model Training
+
+Handled via `ml/trainer.py`:
+
+- Trains Isolation Forest
+- Saves model:
+
+```text
+ml/model_store/isolation_forest_v{timestamp}.pkl
+```
+
+### Cold-Start Strategy
+
+If insufficient data:
+
+- predictions unstable
+- fallback:
+  - rely on z-score
+  - or mark non-anomalous
+
+### Testing
+
+```bash
+pytest ml/tests/test_anomaly.py
 ```
 
 ## Infrastructure Setup
