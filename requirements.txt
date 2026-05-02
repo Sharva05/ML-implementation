@@ -4,6 +4,5 @@ pandas
 psycopg2-binary
 pytest
 scikit-learn
-pandas
 numpy
 joblib
