@@ -40,3 +40,32 @@ ML_CONFIG = {
     "weight_zscore": 0.3,
     "training_window_sessions": 50
 }
+
+# ----------------------------
+# SCORING WEIGHTS
+# Controls contribution of each signal to final score
+# ----------------------------
+
+# ----------------------------
+# Weights for final importance score
+# ----------------------------
+ML_WEIGHT: float = 0.4
+GRAPH_WEIGHT: float = 0.35
+RULE_WEIGHT: float = 0.25
+
+
+# ----------------------------
+# Label thresholds
+# ----------------------------
+LABEL_THRESHOLDS = {
+    "ignore": (0.0, 0.2),
+    "low": (0.2, 0.5),
+    "medium": (0.5, 0.75),
+    "critical": (0.75, 1.0),
+}
+
+# ----------------------------
+# DBSCAN parameters (for clustering)
+# ----------------------------
+DBSCAN_EPS: float = 0.5
+DBSCAN_MIN_SAMPLES: int = 5
