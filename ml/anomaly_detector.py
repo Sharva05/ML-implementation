@@ -1,30 +1,58 @@
 import pandas as pd
+import numpy as np
+from sklearn.ensemble import IsolationForest
+from common.config import ML_CONFIG
 
 
-def detect_anomalies(df: pd.DataFrame) -> pd.DataFrame:
+class AnomalyDetector:
+    """
+    Detect anomalies using Isolation Forest + Z-score hybrid scoring.
+    """
 
-    # Use zscore from P1 (correct approach)
-    df["zscore"] = df["zscore_base"]
+    def __init__(self):
+        self.model = IsolationForest(
+            contamination=ML_CONFIG["contamination"],
+            random_state=42
+        )
 
-    # Detect anomalies using threshold (both high and low deviations)
-    df["is_anomaly"] = df["zscore"].abs() > 1
+    def fit(self, X):
+        """Train Isolation Forest"""
+        self.model.fit(X)
 
-    # Placeholder for ML score
-    df["isolation_score"] = -df["zscore"]
+    def compute_zscore(self, X):
+        """Compute z-score for each feature"""
+        return (X - X.mean()) / X.std()
 
-    # Combined score (placeholder logic for now)
-    df["combined_score"] = (
-        0.5 * df["zscore"] +
-        0.5 * df["isolation_score"]
-    )
+    def predict(self, df):
+        """
+        Input: DataFrame with features
+        Output: anomaly_df with required schema
+        """
 
-    # Return required schema
-    return df[
-        [
-            "log_id",
-            "isolation_score",
-            "zscore",
-            "combined_score",
-            "is_anomaly"
-        ]
-    ]
+        X = df.drop(columns=["log_id"])
+
+        # Isolation score
+        isolation_scores = self.model.decision_function(X)
+
+        # Z-score
+        zscores = self.compute_zscore(X)
+        zscore_values = np.abs(zscores).mean(axis=1)
+
+        # Hybrid score
+        w1 = ML_CONFIG["weight_isolation"]
+        w2 = ML_CONFIG["weight_zscore"]
+
+        combined_score = w1 * isolation_scores + w2 * zscore_values
+
+        # Anomaly flag
+        is_anomaly = self.model.predict(X) == -1
+
+        anomaly_df = pd.DataFrame({
+            "log_id": df["log_id"],
+            "isolation_score": isolation_scores,
+            "zscore": zscore_values,
+            "combined_score": combined_score,
+            "is_anomaly": is_anomaly
+        })
+
+        return anomaly_df

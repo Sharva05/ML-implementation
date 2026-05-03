@@ -33,3 +33,10 @@ def __getattr__(name: str):
 
     # Fetch the requested variable (e.g., DB_URL, ELASTIC_URL) directly from the .env file
     return get_env(name)
+
+ML_CONFIG = {
+    "contamination": 0.05,   # % of anomalies expected
+    "weight_isolation": 0.7,
+    "weight_zscore": 0.3,
+    "training_window_sessions": 50
+}
