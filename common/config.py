@@ -69,3 +69,55 @@ LABEL_THRESHOLDS = {
 # ----------------------------
 DBSCAN_EPS: float = 0.5
 DBSCAN_MIN_SAMPLES: int = 5
+
+# ---------------------------------------------------------------------------
+# P1 Feature Engineering Configuration
+# ---------------------------------------------------------------------------
+
+# Severity weights
+SEVERITY_WEIGHTS = {
+    "CRITICAL": 1.0,
+    "ERROR": 0.7,
+    "WARN": 0.4,
+    "INFO": 0.1,
+}
+
+DEFAULT_SEVERITY_WEIGHT: float = 0.1
+
+
+# Counter anomaly proximity
+COUNTER_PROXIMITY_WINDOW_SECONDS: int = 30
+COUNTER_PROXIMITY_DECAY_RATE: float = 0.05
+
+
+# Statistical features
+ZSCORE_ROLLING_WINDOW: int = 20
+ZSCORE_MIN_STD: float = 1e-6
+BURSTINESS_MIN_EVENTS: int = 2
+
+
+# Temporal features
+INTER_ARRIVAL_ROLLING_WINDOW: int = 5
+
+
+# Feature pipeline paths
+SESSIONIZED_LOGS_PATH: str = (
+    "parsing/processed/sessionized_logs.parquet"
+)
+
+FEATURES_OUTPUT_PATH: str = (
+    "data/processed/features_df.parquet"
+)
+
+
+# Feature dataframe schema contract
+FEATURE_COLUMNS = [
+    "log_id",
+    "session_id",
+    "frequency_score",
+    "burstiness_score",
+    "zscore_base",
+    "time_delta_prev",
+    "severity_weight",
+    "counter_proximity",
+]
