@@ -1,20 +1,21 @@
 import pandas as pd
 
-from statistical_features import (
+from features.statistical_features import (
     log_frequency_score,
     burstiness_score,
     zscore_base
 )
 
-from temporal_features import (
+
+from features.temporal_features import (
     add_temporal_features
 )
 
-from severity_features import (
+from features.severity_features import (
     add_severity_weight
 )
 
-from counter_proximity import (
+from features.counter_proximity import (
     add_counter_proximity
 )
 

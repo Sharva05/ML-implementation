@@ -1,1 +1,1 @@
-# Mark as package
+# Package marker for common
