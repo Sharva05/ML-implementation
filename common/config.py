@@ -70,10 +70,17 @@ LABEL_THRESHOLDS = {
 DBSCAN_EPS: float = 0.5
 DBSCAN_MIN_SAMPLES: int = 5
 
-# ---------------------------------------------------------------------------
-# P1 Feature Engineering Configuration
-# ---------------------------------------------------------------------------
+"""
+Central configuration file for shared project constants.
 
+Contains:
+- ML settings
+- feature engineering thresholds
+- scoring weights
+- pipeline configuration values
+
+Avoid hardcoding constants in module files.
+"""
 # Severity weights
 SEVERITY_WEIGHTS = {
     "CRITICAL": 1.0,
@@ -91,13 +98,13 @@ COUNTER_PROXIMITY_DECAY_RATE: float = 0.05
 
 
 # Statistical features
-ZSCORE_ROLLING_WINDOW: int = 20
+ZSCORE_ROLLING_WINDOW: str = "1h"
 ZSCORE_MIN_STD: float = 1e-6
 BURSTINESS_MIN_EVENTS: int = 2
 
 
 # Temporal features
-INTER_ARRIVAL_ROLLING_WINDOW: int = 5
+INTER_ARRIVAL_EMA_SPAN: int = 5
 
 
 # Feature pipeline paths
@@ -118,6 +125,8 @@ FEATURE_COLUMNS = [
     "burstiness_score",
     "zscore_base",
     "time_delta_prev",
+    "time_delta_session_start",
+    "inter_arrival_rate",
     "severity_weight",
     "counter_proximity",
 ]
