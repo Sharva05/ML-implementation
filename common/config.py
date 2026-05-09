@@ -94,11 +94,10 @@ DEFAULT_SEVERITY_WEIGHT: float = 0.1
 
 # Counter anomaly proximity
 COUNTER_PROXIMITY_WINDOW_SECONDS: int = 30
-COUNTER_PROXIMITY_DECAY_RATE: float = 0.05
 
 
 # Statistical features
-ZSCORE_ROLLING_WINDOW: str = "1h"
+ZSCORE_ROLLING_WINDOW: int = 60
 ZSCORE_MIN_STD: float = 1e-6
 BURSTINESS_MIN_EVENTS: int = 2
 

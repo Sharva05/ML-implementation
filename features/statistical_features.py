@@ -9,13 +9,13 @@ Includes:
 These features help identify unusual log activity patterns.
 """
 
-
-
-
 import numpy as np
 import pandas as pd
 
-from common.config import ZSCORE_ROLLING_WINDOW
+from common.config import (
+    ZSCORE_ROLLING_WINDOW,
+    BURSTINESS_MIN_EVENTS
+)
 
 
 def log_frequency_score(df: pd.DataFrame) -> pd.DataFrame:
@@ -50,7 +50,7 @@ def burstiness_score(df: pd.DataFrame) -> pd.DataFrame:
 
         series = series.dropna()
 
-        if len(series) <= 1:
+        if len(series) < BURSTINESS_MIN_EVENTS:
             return 0.0
 
         mean = series.mean()
@@ -89,7 +89,10 @@ def zscore_base(df: pd.DataFrame) -> pd.DataFrame:
         template_counts
         .groupby("template_id")["count"]
         .transform(
-            lambda x: x.rolling(60, min_periods=1).mean()
+            lambda x: x.rolling(
+                ZSCORE_ROLLING_WINDOW,
+                min_periods=1
+            ).mean()
         )
     )
 
@@ -97,7 +100,10 @@ def zscore_base(df: pd.DataFrame) -> pd.DataFrame:
         template_counts
         .groupby("template_id")["count"]
         .transform(
-            lambda x: x.rolling(60, min_periods=1).std()
+            lambda x: x.rolling(
+                ZSCORE_ROLLING_WINDOW,
+                min_periods=1
+            ).std()
         )
         .fillna(1.0)
     )
@@ -107,7 +113,11 @@ def zscore_base(df: pd.DataFrame) -> pd.DataFrame:
         / template_counts["rolling_std"]
     )
 
-    zmap = template_counts.groupby("template_id")["zscore_base"].mean()
+    zmap = (
+        template_counts
+        .groupby("template_id")["zscore_base"]
+        .mean()
+    )
 
     df["zscore_base"] = (
         df["template_id"].map(zmap)
